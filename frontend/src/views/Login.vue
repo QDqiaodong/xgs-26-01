@@ -86,7 +86,7 @@ const handleLogin = async () => {
           默认账号：admin / admin123
         </p>
         <p class="text-xs text-gray-400 mt-1">
-          其他账号：course_admin / instructor_admin / viewer (密码均为 admin123)
+          督导：supervisor1/supervisor2；负责人：course_owner；讲师：instructor1/instructor2（密码均为 admin123）
         </p>
       </div>
     </div>

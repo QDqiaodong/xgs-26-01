@@ -10,6 +10,7 @@ import {
   Warning as WarningIcon,
   Clock as HistoryIcon,
   Files as PlanIcon,
+  View as ObservationIcon,
   Monitor as HomeIcon,
   Document as LogIcon,
   UserFilled as UserIcon,
@@ -32,6 +33,8 @@ import Logs from './views/Logs.vue'
 import Users from './views/Users.vue'
 import Plans from './views/Plans.vue'
 import PlanDetail from './views/PlanDetail.vue'
+import TeachingObservations from './views/TeachingObservations.vue'
+import TeachingObservationDetail from './views/TeachingObservationDetail.vue'
 
 const router = useRouter()
 const currentRoute = useRoute()
@@ -48,6 +51,7 @@ const routes = [
   { name: '缺口预警', path: '/warnings', icon: WarningIcon },
   { name: '历史记录', path: '/history', icon: HistoryIcon },
   { name: '方案评审发布', path: '/plans', icon: PlanIcon },
+  { name: '带教观察改进', path: '/teaching-observations', icon: ObservationIcon },
   { name: '用户管理', path: '/users', icon: UserIcon },
   { name: '操作日志', path: '/logs', icon: LogIcon }
 ]
@@ -68,6 +72,8 @@ const currentView = computed(() => {
   if (path === '/history') return History
   if (path === '/plans') return Plans
   if (path.startsWith('/plans/')) return PlanDetail
+  if (path === '/teaching-observations') return TeachingObservations
+  if (path.startsWith('/teaching-observations/')) return TeachingObservationDetail
   if (path === '/users') return Users
   if (path === '/logs') return Logs
   return Home

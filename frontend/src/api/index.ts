@@ -318,6 +318,7 @@ export interface LoginResponse {
   userId: number
   username: string
   realName: string
+  instructorId?: number
   token: string
   roles: string[]
 }
@@ -460,6 +461,197 @@ export const skillApi = {
   
   calculateMatchScore: (courseId: number, instructorId: number) =>
     api.get<{ matchScore: number }>(`/skills/match/${courseId}/${instructorId}`)
+}
+
+// ---------------- 讲师带教观察与改进周期 ----------------
+
+export interface ObservationItem {
+  id: number
+  dimension: string
+  sensitivityLevel: 'PUBLIC' | 'INSTRUCTOR_RELATED' | 'RESTRICTED'
+  fact: string
+  grade: string
+  advice?: string
+  effectiveStatus: string
+  revisionNo: number
+  masked: boolean
+}
+
+export interface ObservationRevision extends ObservationItem {
+  itemId: number
+  changeType: string
+  changedBy?: string
+  changeReason?: string
+  disputeId?: number
+  createdAt: string
+}
+
+export interface ObservationDispute {
+  id: number
+  itemId?: number
+  reason: string
+  raisedByName: string
+  raisedAt: string
+  status: string
+  reviewerName?: string
+  reviewComment?: string
+  reviewedAt?: string
+}
+
+export interface GoalEvidence {
+  id: number
+  content: string
+  materialUri?: string
+  submittedByName?: string
+  submittedAt: string
+  status: string
+  reviewComment?: string
+  reviewedByName?: string
+  reviewedAt?: string
+}
+
+export interface ObservationGoal {
+  id: number
+  stageNo: number
+  title: string
+  measurementCriteria: string
+  dueDate: string
+  required: boolean
+  status: string
+  activatedAt?: string
+  completedAt?: string
+  evidence: GoalEvidence[]
+}
+
+export interface CycleDecision {
+  id: number
+  versionNo: number
+  decisionType: string
+  conclusion: string
+  basis: string
+  decidedByName: string
+  replacesDecisionId?: number
+  status: string
+  createdAt: string
+}
+
+export interface TimelineEvent {
+  id: number
+  eventType: string
+  sourceType?: string
+  sourceId?: number
+  detail: string
+  actorName?: string
+  createdAt: string
+}
+
+export interface ObservationReminder {
+  id: number
+  reminderType: string
+  assigneeRole: string
+  title: string
+  message: string
+  status: string
+  dueAt?: string
+  createdAt: string
+}
+
+export interface TeachingObservation {
+  id: number
+  courseId: number
+  assignmentId?: number
+  courseName: string
+  sessionNo: string
+  instructorId: number
+  instructorName: string
+  observerName?: string
+  observerUsername?: string
+  occurredAt: string
+  attachmentSource?: string
+  status: string
+  statusText: string
+  needsImprovement: boolean
+  summary?: string
+  currentConclusion?: string
+  currentConclusionId?: number
+  versionLock: number
+  viewLevel: 'FULL' | 'INSTRUCTOR' | 'PUBLIC'
+  responseDueAt?: string
+  followupDueAt?: string
+  acknowledgedAt?: string
+  responseText?: string
+  respondedAt?: string
+  closedAt?: string
+  items: ObservationItem[]
+  revisions: ObservationRevision[]
+  addenda: { id: number; sensitivityLevel: string; content: string; authorName: string; createdAt: string; masked: boolean }[]
+  disputes: ObservationDispute[]
+  goals: ObservationGoal[]
+  decisions: CycleDecision[]
+  timeline: TimelineEvent[]
+  reminders: ObservationReminder[]
+}
+
+export interface ObservationSummary {
+  id: number
+  courseId: number
+  courseName: string
+  sessionNo: string
+  instructorId: number
+  instructorName: string
+  observerName?: string
+  occurredAt: string
+  status: string
+  statusText: string
+  needsImprovement: boolean
+  currentConclusion?: string
+  pendingReminderCount: number
+  versionLock: number
+  viewLevel: 'FULL' | 'INSTRUCTOR' | 'PUBLIC'
+}
+
+export const observationApi = {
+  list: (params?: { courseId?: number; instructorId?: number; status?: string }) =>
+    api.get<ApiResponse<ObservationSummary[]>>('/teaching-observations', { params }),
+  get: (id: number) => api.get<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}`),
+  reminders: () => api.get<ApiResponse<ObservationReminder[]>>('/teaching-observations/reminders'),
+  create: (data: any) => api.post<ApiResponse<TeachingObservation>>('/teaching-observations', data),
+  addendum: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/addenda`, data),
+  acknowledge: (id: number, expectedVersion?: number) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/acknowledge`, { expectedVersion }),
+  respond: (id: number, responseText: string, expectedVersion?: number) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/respond`, { responseText, expectedVersion }),
+  refuse: (id: number, reason: string, expectedVersion?: number) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/refuse`, { reason, expectedVersion }),
+  dispute: (id: number, data: { itemId?: number; reason: string; expectedVersion?: number }) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/disputes`, data),
+  reviewDispute: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/disputes/review`, data),
+  goals: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/goals`, data),
+  confirmGoals: (id: number, expectedVersion?: number) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/goals/confirm`, { expectedVersion }),
+  evidence: (goalId: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/goals/${goalId}/evidence`, data),
+  reviewEvidence: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/evidence/review`, data),
+  close: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/close`, data),
+  extend: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/extend`, data),
+  requestEscalation: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/escalation-request`, data),
+  escalate: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/escalate`, data),
+  reopen: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/reopen`, data),
+  approveReopen: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/reopen/approve`, data),
+  declineReopen: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/reopen/decline`, data),
+  reopenedConclusion: (id: number, data: any) =>
+    api.post<ApiResponse<TeachingObservation>>(`/teaching-observations/${id}/reopened-conclusion`, data)
 }
 
 export const planApi = {

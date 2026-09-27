@@ -14,6 +14,8 @@ import Logs from '../views/Logs.vue'
 import Users from '../views/Users.vue'
 import Plans from '../views/Plans.vue'
 import PlanDetail from '../views/PlanDetail.vue'
+import TeachingObservations from '../views/TeachingObservations.vue'
+import TeachingObservationDetail from '../views/TeachingObservationDetail.vue'
 
 const routes = [
   {
@@ -91,6 +93,18 @@ const routes = [
     path: '/plans/:id',
     name: 'PlanDetail',
     component: PlanDetail,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/teaching-observations',
+    name: 'TeachingObservations',
+    component: TeachingObservations,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/teaching-observations/:id',
+    name: 'TeachingObservationDetail',
+    component: TeachingObservationDetail,
     meta: { requiresAuth: true }
   },
   {

@@ -42,10 +42,12 @@ public class DataInitializer implements CommandLineRunner {
         if (roleRepository.count() == 0) {
             initRoles();
         }
-        
+        ensureModuleRoles();
+
         if (userRepository.count() == 0) {
             initUsers();
         }
+        ensureModuleUsers();
         
         if (weightConfigRepository.count() == 0) {
             initWeightConfigs();
@@ -167,6 +169,47 @@ public class DataInitializer implements CommandLineRunner {
                 .createdBy("system")
                 .build();
         userRepository.save(viewer);
+    }
+
+    private void ensureModuleRoles() {
+        createRoleIfMissing("SUPERVISOR", "教学督导，负责带教观察、异议复核与证明复查");
+        createRoleIfMissing("COURSE_OWNER", "课程负责人，负责周期结案、延长、升级与重开批准");
+        createRoleIfMissing("INSTRUCTOR", "讲师，确认/回应本人观察并回报改进证据");
+    }
+
+    private void createRoleIfMissing(String name, String description) {
+        if (roleRepository.findByName(name).isEmpty()) {
+            roleRepository.save(Role.builder().name(name).description(description).active(true).build());
+        }
+    }
+
+    private void ensureModuleUsers() {
+        createUserIfMissing("supervisor1", "督导甲", "SUPERVISOR", null);
+        createUserIfMissing("supervisor2", "督导乙", "SUPERVISOR", null);
+        createUserIfMissing("course_owner", "课程负责人", "COURSE_OWNER", null);
+        createUserIfMissing("instructor1", "张明", "INSTRUCTOR", 1L);
+        createUserIfMissing("instructor2", "李华", "INSTRUCTOR", 2L);
+    }
+
+    private void createUserIfMissing(String username, String realName, String roleName, Long instructorId) {
+        if (userRepository.findByUsername(username).isPresent()) {
+            return;
+        }
+        Role role = roleRepository.findByName(roleName).orElse(null);
+        Set<Role> roles = new HashSet<>();
+        if (role != null) {
+            roles.add(role);
+        }
+        userRepository.save(User.builder()
+                .username(username)
+                .password(passwordEncoder.encode("admin123"))
+                .realName(realName)
+                .email(username + "@example.com")
+                .enabled(true)
+                .roles(roles)
+                .instructorId(instructorId)
+                .createdBy("system")
+                .build());
     }
 
     private void initWeightConfigs() {

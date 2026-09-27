@@ -18,6 +18,7 @@ public class AuthUser {
     private Long userId;
     private String username;
     private String realName;
+    private Long instructorId;
     private Set<String> roles;
     private LocalDateTime loginAt;
 

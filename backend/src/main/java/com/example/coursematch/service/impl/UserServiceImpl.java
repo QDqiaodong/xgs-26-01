@@ -57,6 +57,7 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .realName(user.getRealName())
+                .instructorId(user.getInstructorId())
                 .roles(roleNames)
                 .loginAt(LocalDateTime.now())
                 .build();
@@ -70,6 +71,7 @@ public class UserServiceImpl implements UserService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .realName(user.getRealName())
+                .instructorId(user.getInstructorId())
                 .token(token)
                 .roles(roles)
                 .build();

@@ -40,6 +40,9 @@ public class User {
     @Builder.Default
     private Boolean enabled = true;
 
+    @Column(name = "instructor_id")
+    private Long instructorId;
+
     @Column(name = "last_login_time")
     private LocalDateTime lastLoginTime;
 

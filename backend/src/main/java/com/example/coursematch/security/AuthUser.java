@@ -19,6 +19,8 @@ public class AuthUser {
     private String username;
     private String realName;
     private Set<String> roles;
+    /** 绑定的讲师档案ID（INSTRUCTOR 角色） */
+    private Long instructorId;
     private LocalDateTime loginAt;
 
     public boolean hasRole(String role) {

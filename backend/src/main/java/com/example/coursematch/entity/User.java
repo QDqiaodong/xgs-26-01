@@ -43,6 +43,10 @@ public class User {
     @Column(name = "last_login_time")
     private LocalDateTime lastLoginTime;
 
+    /** 绑定的讲师档案ID（INSTRUCTOR 角色使用，带教观察按此定位讲师本人账号） */
+    @Column(name = "instructor_id")
+    private Long instructorId;
+
     @Column(name = "created_by", length = 50)
     @Builder.Default
     private String createdBy = "system";

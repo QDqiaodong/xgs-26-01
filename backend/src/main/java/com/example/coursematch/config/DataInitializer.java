@@ -46,6 +46,8 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.count() == 0) {
             initUsers();
         }
+
+        initObservationUsers();
         
         if (weightConfigRepository.count() == 0) {
             initWeightConfigs();
@@ -100,6 +102,20 @@ public class DataInitializer implements CommandLineRunner {
                 .active(true)
                 .build();
         roleRepository.save(viewerRole);
+
+        Role supervisorRole = Role.builder()
+                .name("SUPERVISOR")
+                .description("教学督导，建立带教观察、复核异议与证据")
+                .active(true)
+                .build();
+        roleRepository.save(supervisorRole);
+
+        Role instructorRole = Role.builder()
+                .name("INSTRUCTOR")
+                .description("讲师，确认观察、回应异议、回报改进证据")
+                .active(true)
+                .build();
+        roleRepository.save(instructorRole);
     }
     
     private void initUsers() {
@@ -167,6 +183,46 @@ public class DataInitializer implements CommandLineRunner {
                 .createdBy("system")
                 .build();
         userRepository.save(viewer);
+    }
+
+    /**
+     * 带教观察链路账号（幂等，已有库升级时也补齐）：
+     * 两名教学督导（用于演示“另一名督导复核异议”）、两名讲师账号（绑定讲师档案 #1/#2）。
+     */
+    private void initObservationUsers() {
+        Role supervisorRole = roleRepository.findByName("SUPERVISOR").orElseGet(() ->
+                roleRepository.save(Role.builder().name("SUPERVISOR")
+                        .description("教学督导").active(true).build()));
+        Role instructorRole = roleRepository.findByName("INSTRUCTOR").orElseGet(() ->
+                roleRepository.save(Role.builder().name("INSTRUCTOR")
+                        .description("讲师").active(true).build()));
+
+        createUserIfAbsent("supervisor1", "教学督导甲", "13900000001",
+                "supervisor1@example.com", new HashSet<>(Set.of(supervisorRole)), null);
+        createUserIfAbsent("supervisor2", "教学督导乙", "13900000002",
+                "supervisor2@example.com", new HashSet<>(Set.of(supervisorRole)), null);
+        createUserIfAbsent("teacher1", "讲师-张明", "13900000003",
+                "teacher1@example.com", new HashSet<>(Set.of(instructorRole)), 1L);
+        createUserIfAbsent("teacher2", "讲师-李华", "13900000004",
+                "teacher2@example.com", new HashSet<>(Set.of(instructorRole)), 2L);
+    }
+
+    private void createUserIfAbsent(String username, String realName, String phone, String email,
+                                    Set<Role> roles, Long instructorId) {
+        if (userRepository.existsByUsername(username)) {
+            return;
+        }
+        userRepository.save(User.builder()
+                .username(username)
+                .password(passwordEncoder.encode("admin123"))
+                .realName(realName)
+                .phone(phone)
+                .email(email)
+                .enabled(true)
+                .roles(roles)
+                .instructorId(instructorId)
+                .createdBy("system")
+                .build());
     }
 
     private void initWeightConfigs() {

@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .realName(user.getRealName())
                 .roles(roleNames)
+                .instructorId(user.getInstructorId())
                 .loginAt(LocalDateTime.now())
                 .build();
         String token = tokenStore.create(authUser);

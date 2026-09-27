@@ -22,7 +22,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         tokenStore.resolve(token).ifPresent(CurrentUserProvider::set);
 
         String path = request.getRequestURI();
-        if (path != null && path.startsWith("/api/plans") && CurrentUserProvider.get().isEmpty()) {
+        boolean secured = (path != null && path.startsWith("/api/plans"))
+                || (path != null && path.startsWith("/api/observations"));
+        if (secured && CurrentUserProvider.get().isEmpty()) {
             throw new UnauthorizedException("未登录或登录已过期");
         }
         return true;
